@@ -32,18 +32,25 @@ void Tokenizer::GetTokens()
 {
     contents_ = file_operations_->Read(filename_);
 
-    std::string line;
+    std::string segment;
+    std::string partial_token;
 
     while (!(*contents_).eof())
     {
-        *contents_ >> line;
+        *contents_ >> segment;
 
-        tokens_.push(
-            std::accumulate(
-                line.begin(),
-                line.end(),
+        auto last_token_in_segment = std::accumulate(
+                segment.begin(),
+                segment.end(),
                 std::string(),
-                std::bind(&Tokenizer::AccumulateLineCharacters, this, _1, _2)));
+                std::bind(&Tokenizer::AccumulateLineCharacters, this, _1, _2));
+
+        partial_token += (partial_token.empty() ? last_token_in_segment : " " + last_token_in_segment);
+
+        if(partial_token.front() != kQuotes || partial_token.back()== kQuotes)
+        {
+            FlushToTokens(&partial_token);
+        }
     }
 }
 
@@ -56,20 +63,19 @@ void Tokenizer::StartDeferredActions()
     started_ = true;
 }
 
-std::string Tokenizer::AccumulateLineCharacters(std::string constructed_token, char ch)
+void Tokenizer::FlushToTokens(std::string* partial_token)
 {
-    if ((ch == '=') ||
-        (std::find(
-                Tokenizer::kReservedTokens.begin(),
-                Tokenizer::kReservedTokens.end(),
-                constructed_token) !=
-            Tokenizer::kReservedTokens.end()))
-    {
-        tokens_.push(constructed_token);
-        constructed_token.clear();
-    }
+    tokens_.push(*partial_token);
+    partial_token->clear();
+}
 
-    return constructed_token + ch;
+bool Tokenizer::PartialTokenIsReserved(std::string partial_token)
+{
+    return (std::find(
+            Tokenizer::kReservedTokens.begin(),
+            Tokenizer::kReservedTokens.end(),
+            partial_token) !=
+        Tokenizer::kReservedTokens.end());
 }
 
 std::string Tokenizer::PopFrontToken()
@@ -81,6 +87,17 @@ std::string Tokenizer::PopFrontToken()
     }
 
     return token_to_retrieve;
+}
+
+std::string Tokenizer::AccumulateLineCharacters(std::string partial_token, char ch)
+{
+    if ((ch == kEquals) ||
+        PartialTokenIsReserved(partial_token))
+    {
+        FlushToTokens(&partial_token);
+    }
+
+    return partial_token + ch;
 }
 
 }

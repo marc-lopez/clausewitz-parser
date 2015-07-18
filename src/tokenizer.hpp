@@ -19,10 +19,15 @@ public:
     static const std::list<std::string> kReservedTokens;
 
 private:
+    constexpr static char kEquals = '=';
+    constexpr static char kQuotes = '"';
+
     void GetTokens();
     void StartDeferredActions();
-    std::string AccumulateLineCharacters(std::string, char);
+    void FlushToTokens(std::string *);
+    bool PartialTokenIsReserved(std::string);
     std::string PopFrontToken();
+    std::string AccumulateLineCharacters(std::string, char);
 
     bool started_;
     std::string filename_;
