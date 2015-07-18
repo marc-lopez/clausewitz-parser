@@ -1,47 +1,86 @@
+#include <algorithm>
+#include <numeric>
 #include <sstream>
 #include <string>
 #include "tokenizer.hpp"
 
+using namespace std::placeholders;
+
+namespace libparser
+{
+
+const std::list<std::string> Tokenizer::kReservedTokens
+{
+    "=",
+    "#"
+};
+
 Tokenizer::Tokenizer(std::string filename, std::shared_ptr<IFileOperations> fileOperations) :
-    _started(false), _constructedToken(), _filename(filename), _contents(), _fileOperations(fileOperations)
+    started_(false), filename_(filename), tokens_(), contents_(), file_operations_(fileOperations)
 {
 
 }
 
 std::string Tokenizer::GetNext()
 {
-    if (!_started)
-    {
-        GetTokens();
-        _started = true;
-    }
+    StartDeferredActions();
 
-    auto tokenToRetrieve = _tokens.empty() ? "" : _tokens.front();
-    if (!_tokens.empty())
-    {
-        _tokens.pop();
-    }
-
-    return tokenToRetrieve;
+    return PopFrontToken();
 }
 
 void Tokenizer::GetTokens()
 {
-    _contents = _fileOperations->Read(_filename);
+    contents_ = file_operations_->Read(filename_);
 
     std::string line;
-    *_contents >> line;
 
-    for (auto ch = line.begin(); ch != line.end(); ++ch)
+    while (!(*contents_).eof())
     {
-        if (*ch == '=' || _constructedToken == "=")
-        {
-            _tokens.push(_constructedToken);
-            _constructedToken.clear();
-        }
+        *contents_ >> line;
 
-        _constructedToken += *ch;
+        tokens_.push(
+            std::accumulate(
+                line.begin(),
+                line.end(),
+                std::string(),
+                std::bind(&Tokenizer::AccumulateLineCharacters, this, _1, _2)));
+    }
+}
+
+void Tokenizer::StartDeferredActions()
+{
+    if (!started_)
+    {
+        GetTokens();
+    }
+    started_ = true;
+}
+
+std::string Tokenizer::AccumulateLineCharacters(std::string constructed_token, char ch)
+{
+    if ((ch == '=') ||
+        (std::find(
+                Tokenizer::kReservedTokens.begin(),
+                Tokenizer::kReservedTokens.end(),
+                constructed_token) !=
+            Tokenizer::kReservedTokens.end()))
+    {
+        tokens_.push(constructed_token);
+        constructed_token.clear();
     }
 
-    _tokens.push(_constructedToken);
+    return constructed_token + ch;
+}
+
+std::string Tokenizer::PopFrontToken()
+{
+    auto token_to_retrieve = tokens_.empty() ? "" : tokens_.front();
+    if (!tokens_.empty())
+    {
+        tokens_.pop();
+    }
+
+    return token_to_retrieve;
+}
+
 }

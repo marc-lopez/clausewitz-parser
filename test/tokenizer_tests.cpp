@@ -1,26 +1,76 @@
+#include <list>
+#include <utility>
 #include "gtest/gtest.h"
 #include "mocks/i_file_operations_mock.hpp"
 #include "tokenizer.hpp"
 
 using namespace testing;
 
-class LibparserShould : public Test
+namespace libparser
+{
+namespace ut
 {
 
+class TokenizerShould : public TestWithParam<std::pair<std::string, std::list<std::string>>>
+{
+protected:
+    virtual void SetUp()
+    {
+        file_operations_mock_ = std::make_shared<IFileOperationsMock>();
+        tokenizer_ = std::make_shared<Tokenizer>("save.ck2", file_operations_mock_);
+    }
 
+    virtual void SetFileContents(std::string contents)
+    {
+        EXPECT_CALL(*file_operations_mock_, Read("save.ck2")).
+            WillOnce(Return(std::make_shared<std::istringstream>(contents)));
+    }
+
+    virtual void ExpectTokenSequence(std::list<std::string> list)
+    {
+        for (auto token : list)
+        {
+            EXPECT_EQ(token, tokenizer_->GetNext());
+        }
+    }
+
+    std::shared_ptr<IFileOperationsMock> file_operations_mock_;
+    std::shared_ptr<Tokenizer> tokenizer_;
 };
 
-TEST_F(LibparserShould, RecognizeTokens)
+TEST_P(TokenizerShould, RecognizeTokens)
 {
-    auto fileOperationsMock = std::make_shared<IFileOperationsMock>();
-    std::string content(R"(version="2.2")");
+    auto param = GetParam();
 
-    EXPECT_CALL(*fileOperationsMock, Read("save.ck2")).
-        WillOnce(Return(std::make_shared<std::istringstream>(content)));
+    SetFileContents(param.first);
 
-    Tokenizer tokenizer("save.ck2", fileOperationsMock);
+    ExpectTokenSequence(param.second);
+}
 
-    EXPECT_EQ("version", tokenizer.GetNext());
-    EXPECT_EQ("=", tokenizer.GetNext());
-    EXPECT_EQ(R"("2.2")", tokenizer.GetNext());
+INSTANTIATE_TEST_CASE_P(
+    FromFileContents,
+    TokenizerShould,
+    Values(
+        std::make_pair<std::string, std::list<std::string>>(
+            R"(version="2.2")",
+            {
+                "version",
+                "=",
+                R"("2.2")"
+            }
+        ),
+        std::make_pair<std::string, std::list<std::string>>(
+R"(# Comment
+version="2.2")",
+            {
+                "#",
+                "Comment",
+                "version",
+                "=",
+                R"("2.2")"
+            }
+        )
+    ));
+
+}
 }
