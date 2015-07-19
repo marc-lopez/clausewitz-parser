@@ -5,6 +5,7 @@ compiler: clang
 sudo: required
 
 before_install:
+  - sudo apt-get update
   - sudo apt-get upgrade gcc
   - sudo apt-get upgrade clang
   - mkdir build
