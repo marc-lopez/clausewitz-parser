@@ -14,8 +14,11 @@ addons:
           - clang-3.6
 
 before_install:
+  - g++ -v
+  - clang++ -v
   - mkdir build
   - cd build
+  - if [ "$CXX" == "clang++" ]; then export CXX="clang++-3.6"; fi
 
 install:
   - cmake -G "Unix Makefiles" ..
