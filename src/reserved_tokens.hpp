@@ -7,10 +7,11 @@ namespace libparser
 {
 namespace tokens
 {
-    const std::string kEmpty = "";
-    constexpr char kEquals = '=';
-    const std::string kSentinel = "$";
-    constexpr char kQuotes = '"';
+    const std::string kEmpty("");
+    const std::string kComment("#");
+    const std::string kEquals("=");
+    const std::string kSentinel("$");
+    const std::string kQuotes(R"(")");
 
 }
 }

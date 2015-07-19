@@ -19,13 +19,13 @@ namespace libparser
             current_token != tokens::kEmpty;
             current_token = tokenizer_->GetNext())
         {
-            if (unparsed_tokens_.top().front() == tokens::kEquals)
+            if (unparsed_tokens_.top() == tokens::kEquals)
             {
                 unparsed_tokens_.pop();
                 auto key = TakeMostRecentUnparsedToken();
                 parsed_data[key] = current_token;
             }
-            else
+            else if ((unparsed_tokens_.top() != tokens::kComment) || current_token == "\n")
             {
                 unparsed_tokens_.push(current_token);
             }

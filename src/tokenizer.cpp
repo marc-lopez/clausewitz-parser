@@ -2,6 +2,7 @@
 #include <numeric>
 #include <sstream>
 #include <string>
+#include "reserved_tokens.hpp"
 #include "tokenizer.hpp"
 
 using namespace std::placeholders;
@@ -11,8 +12,8 @@ namespace libparser
 
 const std::list<std::string> Tokenizer::kReservedTokens
 {
-    std::string(1, tokens::kEquals),
-    "#"
+    tokens::kEquals,
+    tokens::kComment
 };
 
 Tokenizer::Tokenizer(std::shared_ptr<IFileOperations> fileOperations) :
@@ -80,7 +81,7 @@ bool Tokenizer::IsReservedToken(std::string partial_token)
 
 bool Tokenizer::IsQuotes(const char &ch)
 {
-    return (ch == tokens::kQuotes);
+    return (ch == tokens::kQuotes.front());
 }
 
 bool Tokenizer::XorOfEnds(std::string * str, std::function<bool(const char &)> predicate)
@@ -101,7 +102,7 @@ std::string Tokenizer::PopFrontToken()
 
 std::string Tokenizer::AccumulateLineCharacters(std::string partial_token, char ch)
 {
-    if ((ch == tokens::kEquals) ||
+    if ((ch == tokens::kEquals.front()) ||
         IsReservedToken(partial_token))
     {
         FlushToTokens(&partial_token);

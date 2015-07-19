@@ -1,6 +1,7 @@
 #include <list>
 #include <utility>
 #include "gtest/gtest.h"
+#include "test_case.hpp"
 #include "mocks/i_file_operations_mock.hpp"
 #include "tokenizer.hpp"
 
@@ -11,10 +12,9 @@ namespace libparser
 namespace ut
 {
 
-class TokenizerShould : public TestWithParam<std::pair<std::string, std::list<std::string>>>
+class TokenizerShould : public TestCase, public TestWithParam<std::pair<std::string, std::list<std::string>>>
 {
 protected:
-    static constexpr const char * kSampleFilename = "save.ck2";
 
     virtual void SetUp()
     {
