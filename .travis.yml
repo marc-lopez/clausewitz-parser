@@ -15,7 +15,7 @@ addons:
 
 before_install:
   - if [ "$CXX" == "clang++" ]; then export CXX="clang++-3.6"; fi
-  - sudo pip install coveralls
+  - sudo pip install cpp-coveralls
 
 install:
   - mkdir build && cd build && cmake -G "Unix Makefiles" .. && make
