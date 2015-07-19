@@ -22,4 +22,4 @@ install:
 
 script: test/libparser_tests
 after_success:
-  - coveralls -b src -r .. --exclude test --gcov-options '\-lp \-b \-c'
+  - coveralls --exclude test --exclude build/test/gmock --gcov-options '\-lp \-b \-c'
