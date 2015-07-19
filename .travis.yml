@@ -4,11 +4,7 @@ compiler: clang
 
 sudo: false
 
-addons:
-  apt:
-    packages:
-    - gcc-4.8
-    - clang-3.6
+addons: apt: sources: - ubuntu-toolchain-r-test packages: - g++-4.8 - clang-3.6
 
 before_install:
   - mkdir build
