@@ -18,8 +18,8 @@ before_install:
   - sudo pip install cpp-coveralls
 
 install:
-  - mkdir build && cd build && cmake -G "Unix Makefiles" .. && make
+  - mkdir build && cd build && cmake -G "Unix Makefiles" -DADD_COVERAGE_INFO=1 .. && make
 
 script: test/libparser_tests
 after_success:
-  - cd .. & coveralls --exclude build --exclude test --gcov-options '\-lp \-c'
+  - coveralls --exclude build --exclude test --gcov-options '\-lp \-c'
