@@ -14,15 +14,17 @@ namespace ut
 class TokenizerShould : public TestWithParam<std::pair<std::string, std::list<std::string>>>
 {
 protected:
+    static constexpr const char * kSampleFilename = "save.ck2";
+
     virtual void SetUp()
     {
         file_operations_mock_ = std::make_shared<IFileOperationsMock>();
-        tokenizer_ = std::make_shared<Tokenizer>("save.ck2", file_operations_mock_);
+        tokenizer_ = std::make_shared<Tokenizer>(file_operations_mock_);
     }
 
     virtual void SetFileContents(std::string contents)
     {
-        EXPECT_CALL(*file_operations_mock_, Read("save.ck2")).
+        EXPECT_CALL(*file_operations_mock_, Read(kSampleFilename)).
             WillOnce(Return(std::make_shared<std::istringstream>(contents)));
     }
 
@@ -43,6 +45,8 @@ TEST_P(TokenizerShould, RecognizeTokens)
     auto param = GetParam();
 
     SetFileContents(param.first);
+
+    tokenizer_->Read(kSampleFilename);
 
     ExpectTokenSequence(param.second);
 }

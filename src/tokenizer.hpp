@@ -6,30 +6,32 @@
 #include <string>
 #include <queue>
 #include "i_file_operations.hpp"
+#include "i_tokenizer.hpp"
+#include "reserved_tokens.hpp"
 
 namespace libparser
 {
 
-class Tokenizer
+class Tokenizer : public ITokenizer
 {
 public:
-    Tokenizer(std::string, std::shared_ptr<IFileOperations>);
+    Tokenizer(std::shared_ptr<IFileOperations>);
+    void Read(std::string);
     std::string GetNext();
 
     static const std::list<std::string> kReservedTokens;
 
 private:
-    constexpr static char kEquals = '=';
-    constexpr static char kQuotes = '"';
 
     void GetTokens();
-    void StartDeferredActions();
     void FlushToTokens(std::string *);
-    bool PartialTokenIsReserved(std::string);
+    void TryFlushTokens(std::string *);
+    bool IsQuotes(const char&);
+    bool IsReservedToken(std::string);
+    bool XorOfEnds(std::string *, std::function<bool(const char &)>);
     std::string PopFrontToken();
     std::string AccumulateLineCharacters(std::string, char);
 
-    bool started_;
     std::string filename_;
     std::queue<std::string> tokens_;
     std::shared_ptr<std::istringstream> contents_;
