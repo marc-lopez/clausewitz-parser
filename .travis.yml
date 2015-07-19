@@ -4,11 +4,12 @@ compiler: clang
 
 sudo: false
 
-addons: apt:
-    sources: buntu-toolchain-r-test
-    packages:
-      - g++-4.8
-      - clang-3.6
+addons:
+    apt:
+        sources: buntu-toolchain-r-test
+        packages:
+          - g++-4.8
+          - clang-3.6
 
 before_install:
   - mkdir build
