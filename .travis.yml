@@ -2,7 +2,7 @@ language: cpp
 
 compiler: clang
 
-sudo: false
+sudo: required
 
 addons:
     apt:
@@ -15,7 +15,11 @@ addons:
 
 before_install:
   - if [ "$CXX" == "clang++" ]; then export CXX="clang++-3.6"; fi
-  - pip install coveralls
+  - wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
+  - python ez_setup.py –user
+  - curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+  - python get-pip.py –user
+  - ~/.local/bin/pip install coveralls
 
 install:
   - ./configure --enable-gcov && make && make check
