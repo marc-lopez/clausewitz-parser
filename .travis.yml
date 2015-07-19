@@ -21,4 +21,5 @@ install:
   - mkdir build && cd build && cmake -G "Unix Makefiles" .. && make
 
 script: test/libparser_tests
-after_success: coveralls --exclude lib --exclude test --gcov-options '\-lp \-c'
+after_success:
+  - cd .. & coveralls --exclude build --exclude test --gcov-options '\-lp \-c'
