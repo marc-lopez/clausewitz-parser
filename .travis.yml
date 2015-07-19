@@ -2,12 +2,15 @@ language: cpp
 
 compiler: clang
 
-sudo: required
+sudo: false
+
+addons:
+  apt:
+    packages:
+    - gcc
+    - clang
 
 before_install:
-  - sudo apt-get update
-  - sudo apt-get upgrade gcc
-  - sudo apt-get upgrade clang
   - mkdir build
   - cd build
 
