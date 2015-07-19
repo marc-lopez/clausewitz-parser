@@ -18,11 +18,7 @@ before_install:
   - sudo pip install coveralls
 
 install:
-  - ./configure --enable-gcov && make && make check
-  - mkdir build
-  - cd build
-  - cmake -G "Unix Makefiles" ..
-  - make
+  - mkdir build && cd build && cmake -G "Unix Makefiles" .. && make
 
 script: test/libparser_tests
 after_success: coveralls --exclude lib --exclude tests --gcov-options '\-lp \-c'
