@@ -4,6 +4,13 @@ find_package(Threads REQUIRED)
 # Enable ExternalProject CMake module
 include(ExternalProject)
 
+if (WIN32)
+    set(DISABLE_PTHREADS 1)
+else()
+    set(DISABLE_PTHREADS 0)
+endif()
+
+
 # Download and install GoogleMock
 ExternalProject_Add(
     gmock
@@ -11,7 +18,7 @@ ExternalProject_Add(
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gmock
     # Disable install step
     INSTALL_COMMAND ""
-    CMAKE_ARGS -Dgtest_disable_pthreads=1
+    CMAKE_ARGS -Dgtest_disable_pthreads=${DISABLE_PTHREADS}
 )
 
 # Create a libgmock target to be used as a dependency by test programs
