@@ -2,8 +2,6 @@ language: cpp
 
 compiler: clang
 
-sudo: required
-
 addons:
     apt:
         sources:
