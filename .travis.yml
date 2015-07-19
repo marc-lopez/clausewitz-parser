@@ -6,9 +6,12 @@ sudo: false
 
 addons:
     apt:
-        sources: ubuntu-toolchain-r-test
+        sources:
+          - ubuntu-toolchain-r-test
+          - h-rayflood-llvm
         packages:
           - g++-4.8
+          - clang-3.6
 
 before_install:
   - mkdir build
