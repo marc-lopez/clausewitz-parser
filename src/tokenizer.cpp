@@ -2,7 +2,7 @@
 #include <numeric>
 #include <sstream>
 #include <string>
-#include "reserved_tokens.hpp"
+#include "tokens.hpp"
 #include "tokenizer.hpp"
 
 using namespace std::placeholders;
@@ -40,18 +40,16 @@ void Tokenizer::GetTokens()
     std::string segment;
     std::string partial_token;
 
-    while (!(*contents_).eof())
+    while (std::getline(*contents_, segment))
     {
-        *contents_ >> segment;
-
-        auto last_token_in_segment = std::accumulate(
-                segment.begin(),
-                segment.end(),
-                std::string(),
-                std::bind(&Tokenizer::AccumulateLineCharacters, this, _1, _2));
+        auto last_token_in_segment = std::accumulate(segment.begin(), segment.end(), std::string(),
+                                                     [this](std::string partial_token, char ch) {
+                                                        return this->AccumulateLineCharacters(partial_token, ch);});
 
         partial_token += (partial_token.empty() ? last_token_in_segment : " " + last_token_in_segment);
         TryFlushTokens(&partial_token);
+
+        tokens_.push("\n");
     }
 }
 
@@ -63,11 +61,16 @@ void Tokenizer::FlushToTokens(std::string * partial_token)
 
 void Tokenizer::TryFlushTokens(std::string * partial_token)
 {
-    if(!XorOfEnds(partial_token, std::bind(&Tokenizer::IsQuotes, this, _1)))
+    std::bind(&Tokenizer::IsQuotes, _1);
+    if(!XorOfEnds(partial_token, [this](const char &ch){return this->IsQuotes(ch);}))
     {
         FlushToTokens(partial_token);
     }
+}
 
+bool Tokenizer::IsQuotes(const char &ch)
+{
+    return (ch == tokens::kQuotes[0]);
 }
 
 bool Tokenizer::IsReservedToken(std::string partial_token)
@@ -79,9 +82,9 @@ bool Tokenizer::IsReservedToken(std::string partial_token)
         Tokenizer::kReservedTokens.end());
 }
 
-bool Tokenizer::IsQuotes(const char &ch)
+bool Tokenizer::IsToken(const char& ch, const std::string& token)
 {
-    return (ch == tokens::kQuotes.front());
+    return (ch == token.front());
 }
 
 bool Tokenizer::XorOfEnds(std::string * str, std::function<bool(const char &)> predicate)
@@ -102,10 +105,17 @@ std::string Tokenizer::PopFrontToken()
 
 std::string Tokenizer::AccumulateLineCharacters(std::string partial_token, char ch)
 {
-    if ((ch == tokens::kEquals.front()) ||
+    if (IsToken(ch, tokens::kEquals) ||
         IsReservedToken(partial_token))
     {
         FlushToTokens(&partial_token);
+    }
+
+    if (IsToken(ch, tokens::kEmpty) ||
+        ch == '\r' ||
+        ((ch == ' ') && !IsQuotes(partial_token.front())))
+    {
+        return partial_token;
     }
 
     return partial_token + ch;

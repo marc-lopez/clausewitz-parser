@@ -7,7 +7,7 @@
 #include <queue>
 #include "i_file_operations.hpp"
 #include "i_tokenizer.hpp"
-#include "reserved_tokens.hpp"
+#include "tokens.hpp"
 
 namespace libparser
 {
@@ -29,6 +29,7 @@ private:
     bool IsQuotes(const char&);
     bool IsReservedToken(std::string);
     bool XorOfEnds(std::string *, std::function<bool(const char &)>);
+    bool IsToken(const char& ch, const std::string& token);
     std::string PopFrontToken();
     std::string AccumulateLineCharacters(std::string, char);
 

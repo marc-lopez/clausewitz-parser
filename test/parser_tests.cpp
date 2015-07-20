@@ -4,7 +4,7 @@
 #include "gtest/gtest.h"
 #include "test_case.hpp"
 #include "mocks/i_tokenizer_mock.hpp"
-#include "reserved_tokens.hpp"
+#include "tokens.hpp"
 #include "parser.hpp"
 
 using namespace testing;
