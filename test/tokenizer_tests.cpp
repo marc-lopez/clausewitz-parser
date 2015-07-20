@@ -82,6 +82,18 @@ R"(name="of Constantinople")",
                 "=",
                 R"("of Constantinople")"
             }
+        ),
+        std::make_pair<std::string, std::list<std::string>>(
+R"(player=
+{
+    id=720361
+})",
+            {
+                "player", "=", "\n",
+                "{", "\n",
+                "id", "=", "720361", "\n",
+                "}"
+            }
         )
     ));
 

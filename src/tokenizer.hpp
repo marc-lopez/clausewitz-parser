@@ -25,7 +25,9 @@ private:
 
     void GetTokens();
     void FlushToTokens(std::string *);
+    void PushTokenIfValid(std::string&, const char&);
     void TryFlushTokens(std::string *);
+    bool IsPartOfQuotedToken(const char&, const std::string&);
     bool IsQuotes(const char&);
     bool IsReservedToken(std::string);
     bool XorOfEnds(std::string *, std::function<bool(const char &)>);

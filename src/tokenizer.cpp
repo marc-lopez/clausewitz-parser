@@ -33,6 +33,17 @@ std::string Tokenizer::GetNext()
     return PopFrontToken();
 }
 
+std::string Tokenizer::PopFrontToken()
+{
+    auto token_to_retrieve = tokens_.empty() ? tokens::kEmpty : tokens_.front();
+    if (!tokens_.empty())
+    {
+        tokens_.pop();
+    }
+
+    return token_to_retrieve;
+}
+
 void Tokenizer::GetTokens()
 {
     contents_ = file_operations_->Read(filename_);
@@ -53,24 +64,24 @@ void Tokenizer::GetTokens()
     }
 }
 
+void Tokenizer::TryFlushTokens(std::string * partial_token)
+{
+    if(!XorOfEnds(partial_token, [this](const char &ch){return this->IsQuotes(ch);}) &&
+        (!partial_token->empty()))
+    {
+        FlushToTokens(partial_token);
+    }
+}
+
 void Tokenizer::FlushToTokens(std::string * partial_token)
 {
     tokens_.push(*partial_token);
     partial_token->clear();
 }
 
-void Tokenizer::TryFlushTokens(std::string * partial_token)
-{
-    std::bind(&Tokenizer::IsQuotes, _1);
-    if(!XorOfEnds(partial_token, [this](const char &ch){return this->IsQuotes(ch);}))
-    {
-        FlushToTokens(partial_token);
-    }
-}
-
 bool Tokenizer::IsQuotes(const char &ch)
 {
-    return (ch == tokens::kQuotes[0]);
+    return IsToken(ch, tokens::kQuotes);
 }
 
 bool Tokenizer::IsReservedToken(std::string partial_token)
@@ -82,43 +93,42 @@ bool Tokenizer::IsReservedToken(std::string partial_token)
         Tokenizer::kReservedTokens.end());
 }
 
-bool Tokenizer::IsToken(const char& ch, const std::string& token)
+inline bool Tokenizer::IsToken(const char& ch, const std::string& token)
 {
     return (ch == token.front());
 }
 
-bool Tokenizer::XorOfEnds(std::string * str, std::function<bool(const char &)> predicate)
+inline bool Tokenizer::XorOfEnds(std::string * str, std::function<bool(const char &)> predicate)
 {
     return (predicate(str->front()) ^ predicate(str->back()));
 }
 
-std::string Tokenizer::PopFrontToken()
+std::string Tokenizer::AccumulateLineCharacters(std::string partial_token, char ch)
 {
-    auto token_to_retrieve = tokens_.empty() ? tokens::kEmpty : tokens_.front();
-    if (!tokens_.empty())
+    PushTokenIfValid(partial_token, ch);
+
+    if (IsToken(ch, tokens::kEmpty) ||
+        ch == '\r' ||
+        !IsPartOfQuotedToken(ch, partial_token))
     {
-        tokens_.pop();
+        return partial_token;
     }
 
-    return token_to_retrieve;
+    return partial_token + ch;
 }
 
-std::string Tokenizer::AccumulateLineCharacters(std::string partial_token, char ch)
+void Tokenizer::PushTokenIfValid(std::string& partial_token, const char& ch)
 {
     if (IsToken(ch, tokens::kEquals) ||
         IsReservedToken(partial_token))
     {
         FlushToTokens(&partial_token);
     }
+}
 
-    if (IsToken(ch, tokens::kEmpty) ||
-        ch == '\r' ||
-        ((ch == ' ') && !IsQuotes(partial_token.front())))
-    {
-        return partial_token;
-    }
-
-    return partial_token + ch;
+inline bool Tokenizer::IsPartOfQuotedToken(const char& ch, const std::string& partial_token)
+{
+    return ((ch != ' ') || IsQuotes(partial_token.front()));
 }
 
 }
